@@ -103,17 +103,12 @@ jobs:
         name: torrent
         path: ${{ github.event.inputs.file_name }}.torrent
         
-    - name: Seed torrent
+- name: Seed torrent
       if: ${{ github.event.inputs.seed == 'true' }}
       run: |
-        # Install aria2c
+        # Install torrent client (e.g., transmission-cli)
         sudo apt-get update
-        sudo apt-get install -y aria2
+        sudo apt-get install -y transmission-cli
         
         # Seed the torrent file
-        aria2c --enable-rpc --rpc-listen-all \
-          --seed-ratio=0 \
-          --bt-seed-unverified \
-          --bt-save-metadata \
-          --bt-max-upload-limit=50K \
-          "${{ github.workspace }}/${{ github.event.inputs.file_name }}.torrent"
+        transmisson-remote --add "${{ github.workspace }}/${{ github.event.inputs.file_name }}.torrent"
