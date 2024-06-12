@@ -1,0 +1,56 @@
+name: Torrent Seeder
+
+on:
+  workflow_dispatch:
+    inputs:
+      seed:
+        description: 'Continue seeding the torrent after upload?'
+        required: true
+        default: 'false'
+        type: boolean
+
+jobs:
+
+  seed-torrent:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      
+    - name: Download release assets
+      uses: robmannion/download-release-asset@v1
+      id: download
+      with:
+        release-ids: ${{ secrets.RELEASE_REPO }}
+        
+    - name: Unzip assets
+      run: |
+        mkdir unzipped
+        for file in ${{ steps.download.outputs.assets_paths }}; do
+          if [[ "$file" == *.001 ]]; then
+            unzip -o "$file" -d unzipped
+          fi
+        done
+        
+    - name: Create torrent file
+      uses: anthonyraymond/create-torrent@v1
+      with:
+        path: unzipped
+        output: torrent.torrent
+        
+    - name: Upload torrent artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: torrent
+        path: torrent.torrent
+        
+    - name: Seed torrent
+      if: ${{ github.event.inputs.seed == 'true' }}
+      run: |
+        # Install torrent client (e.g., transmission-cli)
+        sudo apt-get update
+        sudo apt-get install -y transmission-cli
+        
+        # Seed the torrent file
+        transmission-cli torrent.torrent
