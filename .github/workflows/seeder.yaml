@@ -106,9 +106,18 @@ jobs:
     - name: Seed torrent
       if: ${{ github.event.inputs.seed == 'true' }}
       run: |
-        # Install torrent client (e.g., transmission-cli)
+        # Install qBittorrent-nox
         sudo apt-get update
-        sudo apt-get install -y transmission-cli
+        sudo apt-get install -y qbittorrent-nox
         
-        # Seed the torrent file
-        transmisson-remote --add "${{ github.workspace }}/${{ github.event.inputs.file_name }}.torrent"
+        # Start qBittorrent-nox in the background
+        qbittorrent-nox --webui-port=8080 &
+        
+        # Wait for qBittorrent to start
+        sleep 10
+        
+        # Add torrent to qBittorrent
+        curl -X POST http://localhost:8080/api/v2/torrents/add -F "torrents=@${{ github.workspace }}/${{ github.event.inputs.file_name }}.torrent"
+        
+        # Keep qBittorrent running
+        tail -f /dev/null
