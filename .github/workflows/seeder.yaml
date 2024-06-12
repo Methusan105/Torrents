@@ -60,27 +60,22 @@ jobs:
         remove-haskell: true
         remove-codeql: true
         remove-docker-images: true
-      
-    - name: Download release assets
-      run: |
-        release_url="https://api.github.com/repos/${{ github.event.inputs.owner }}/${{ github.event.inputs.repo }}/releases/tags/${{ github.event.inputs.release_tag }}"
-        asset_urls=$(curl -s "$release_url" | grep "browser_download_url" | cut -d '"' -f 4)
-        for url in $asset_urls; do
-          curl -L -O "$url"
-        done
-        
+    
+    - name: Install 7zip
+      run: sudo apt-get update && sudo apt-get install -y p7zip-full
+    
     - name: Unzip assets
       run: |
-        mkdir unzipped
+        mkdir -p unzipped
         for file in $(ls); do
           if [[ "$file" == *.001 ]]; then
-            unzip -o "$file.001" -d unzipped
+            7z x "$file" -ounzipped
           fi
         done
         
     - name: Create torrent using torrenttools
       run: |
-          torrenttools create \
+        torrenttools create \
           -v "${{ github.event.inputs.protocol_version }}" \
           -o "${{ github.event.inputs.file_name }}.torrent" \
           -c "${{ github.event.inputs.comment }}" \
@@ -103,3 +98,4 @@ jobs:
         
         # Seed the torrent file
         transmission-cli ${{ github.event.inputs.file_name }}.torrent
+1
