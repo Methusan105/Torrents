@@ -98,4 +98,3 @@ jobs:
         
         # Seed the torrent file
         transmission-cli ${{ github.event.inputs.file_name }}.torrent
-1
