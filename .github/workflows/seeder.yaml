@@ -15,12 +15,15 @@ on:
        owner:
         description: 'GitHub owner (username or organization)'
         required: true
+        default: 12
       repo:
         description: 'GitHub repository name'
         required: true
+        default: 12
       release_tag:
         description: 'Release tag or version number'
         required: true
+        default: 12
       file_name:
         description: File name of the folder in the torrent
         required: true
