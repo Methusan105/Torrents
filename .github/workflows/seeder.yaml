@@ -103,7 +103,7 @@ jobs:
         name: torrent
         path: ${{ github.event.inputs.file_name }}.torrent
         
-- name: Seed torrent
+    - name: Seed torrent
       if: ${{ github.event.inputs.seed == 'true' }}
       run: |
         # Install torrent client (e.g., transmission-cli)
