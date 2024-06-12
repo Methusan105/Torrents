@@ -98,7 +98,7 @@ jobs:
           unzipped
         
     - name: Upload torrent artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: torrent
         path: ${{ github.event.inputs.file_name }}.torrent
