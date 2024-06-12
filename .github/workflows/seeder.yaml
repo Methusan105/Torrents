@@ -103,21 +103,33 @@ jobs:
         name: torrent.torrent
         path: ${{ github.event.inputs.file_name }}.torrent
         
-    - name: Seed torrent
-      if: ${{ github.event.inputs.seed == 'true' }}
+    - name: Setup FTP server
       run: |
-        # Install qBittorrent-nox
-        sudo apt-get update
-        sudo apt-get install -y qbittorrent-nox
+        sudo mkdir -p /srv/ftp/upload
+        sudo chown nobody:nogroup /srv/ftp/upload
         
-        # Start qBittorrent-nox in the background
-        qbittorrent-nox --webui-port=8080 &
+        echo "anonymous_enable=YES" | sudo tee -a /etc/vsftpd.conf
+        echo "anon_root=/srv/ftp/upload" | sudo tee -a /etc/vsftpd.conf
+        echo "anon_upload_enable=YES" | sudo tee -a /etc/vsftpd.conf
+        echo "anon_mkdir_write_enable=YES" | sudo tee -a /etc/vsftpd.conf
+        echo "write_enable=YES" | sudo tee -a /etc/vsftpd.conf
+        echo "local_enable=YES" | sudo tee -a /etc/vsftpd.conf
+        echo "chown_uploads=YES" | sudo tee -a /etc/vsftpd.conf
+        echo "chown_username=nobody" | sudo tee -a /etc/vsftpd.conf
+        echo "ftpd_banner=Welcome to the FTP server" | sudo tee -a /etc/vsftpd.conf
         
-        # Wait for qBittorrent to start
-        sleep 10
+        sudo systemctl restart vsftpd
         
-        # Add torrent to qBittorrent
-        curl -X POST http://localhost:8080/api/v2/torrents/add -F "torrents=@${{ github.workspace }}/${{ github.event.inputs.file_name }}.torrent"
+        sudo cp -r unzipped/* /srv/ftp/upload/
         
-        # Keep qBittorrent running
-        tail -f /dev/null
+    - name: Display FTP server info
+      run: |
+        echo "FTP server is running."
+        echo "You can connect using the following details:"
+        echo "Server: $(hostname -I | awk '{print $1}')"
+        echo "Port: 21"
+        echo "Username: anonymous"
+        echo "Password: (leave blank)"
+        
+    - name: Keep FTP server running
+      run: tail -f /dev/null
