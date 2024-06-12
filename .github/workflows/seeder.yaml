@@ -100,7 +100,7 @@ jobs:
     - name: Upload torrent artifact
       uses: actions/upload-artifact@v4
       with:
-        name: torrent
+        name: torrent.torrent
         path: ${{ github.event.inputs.file_name }}.torrent
         
     - name: Seed torrent
