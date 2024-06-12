@@ -12,8 +12,14 @@ on:
         description: Comment
         required: true
         default: Firefox Setup 122.0.1 win64 en-US by torrent-webseed-creator
-      release_repo_url:
-        description: 'URL of the release repository'
+       owner:
+        description: 'GitHub owner (username or organization)'
+        required: true
+      repo:
+        description: 'GitHub repository name'
+        required: true
+      release_tag:
+        description: 'Release tag or version number'
         required: true
       file_name:
         description: File name of the folder in the torrent
@@ -53,10 +59,12 @@ jobs:
         remove-docker-images: true
       
     - name: Download release assets
-      uses: robmannion/download-release-asset@v1
-      id: download
-      with:
-        release-url: ${{ github.event.inputs.release_repo_url }}
+      run: |
+        release_url="https://api.github.com/repos/${{ github.event.inputs.owner }}/${{ github.event.inputs.repo }}/releases/tags/${{ github.event.inputs.release_tag }}"
+        asset_urls=$(curl -s "$release_url" | grep "browser_download_url" | cut -d '"' -f 4)
+        for url in $asset_urls; do
+          curl -L -O "$url"
+        done
         
     - name: Unzip assets
       run: |
