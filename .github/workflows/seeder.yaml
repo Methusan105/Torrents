@@ -74,7 +74,7 @@ jobs:
         mkdir unzipped
         for file in $(ls); do
           if [[ "$file" == *.001 ]]; then
-            unzip -o "$file" -d unzipped
+            unzip -o "$file".001 -d unzipped
           fi
         done
         
