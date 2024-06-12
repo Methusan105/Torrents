@@ -111,4 +111,4 @@ jobs:
         sudo apt-get install -y transmission-cli
         
         # Seed the torrent file
-        transmission-cli ${{ github.event.inputs.file_name }}.torrent
+        transmission-cli "${{ github.workspace }}/${{ github.event.inputs.file_name }}.torrent"
