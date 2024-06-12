@@ -9,41 +9,41 @@ on:
         default: 'false'
         type: boolean
       comment:
-        description: Comment
+        description: 'Comment'
         required: true
-        default: Firefox Setup 122.0.1 win64 en-US by torrent-webseed-creator
-       owner:
+        default: 'Firefox Setup 122.0.1 win64 en-US by torrent-webseed-creator'
+      owner:
         description: 'GitHub owner (username or organization)'
         required: true
-        default: 12
+        default: '12'
       repo:
         description: 'GitHub repository name'
         required: true
-        default: 12
+        default: '12'
       release_tag:
         description: 'Release tag or version number'
         required: true
-        default: 12
+        default: '12'
       file_name:
-        description: File name of the folder in the torrent
+        description: 'File name of the folder in the torrent'
         required: true
-        default: Firefox Setup 122.0.1
+        default: 'Firefox Setup 122.0.1'
       piece_size:
-        description: Piece Size. Use auto for automatic calculation, or use the recommended piece size on the README.md file
+        description: 'Piece Size. Use auto for automatic calculation, or use the recommended piece size on the README.md file'
         required: true
-        default: auto
+        default: 'auto'
       protocol_version:
-        description: BitTorrent Protocol version 1, 2, or hybrid
+        description: 'BitTorrent Protocol version 1, 2, or hybrid'
         required: true
-        default: 1
-        type: choice
-        options: [1, 2, hybrid]
+        type: string
+        default: '1'
+        options: ['1', '2', 'hybrid']
       maximize_disk_space:
-        description: Maximize disk space. Check if getting out of disk space error
+        description: 'Maximize disk space. Check if getting out of disk space error'
         type: boolean
+        default: false
 
 jobs:
-
   seed-torrent:
     runs-on: ubuntu-latest
     
@@ -52,7 +52,7 @@ jobs:
       uses: actions/checkout@v3
     
     - name: Maximize disk space
-      if: inputs.maximize_disk_space
+      if: inputs.maximize_disk_space == 'true'
       uses: easimon/maximize-build-space@v10
       with:
         remove-dotnet: true
@@ -72,7 +72,7 @@ jobs:
     - name: Unzip assets
       run: |
         mkdir unzipped
-        for file in ${{ steps.download.outputs.assets_paths }}; do
+        for file in $(ls); do
           if [[ "$file" == *.001 ]]; then
             unzip -o "$file" -d unzipped
           fi
@@ -80,11 +80,11 @@ jobs:
         
     - name: Create torrent using torrenttools
       run: |
-        torrenttools create \
-          -v "${{ inputs.protocol_version }}" \
-          -o "${{ inputs.file_name }}.torrent" \
-          -c "${{ inputs.comment }}" \
-          -l "${{ inputs.piece_size }}" \
+          torrenttools create \
+          -v "${{ github.event.inputs.protocol_version }}" \
+          -o "${{ github.event.inputs.file_name }}.torrent" \
+          -c "${{ github.event.inputs.comment }}" \
+          -l "${{ github.event.inputs.piece_size }}" \
           -s "torrent-creator" \
           unzipped
         
@@ -92,7 +92,7 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: torrent
-        path: ${{ inputs.file_name }}.torrent
+        path: ${{ github.event.inputs.file_name }}.torrent
         
     - name: Seed torrent
       if: ${{ github.event.inputs.seed == 'true' }}
@@ -102,4 +102,4 @@ jobs:
         sudo apt-get install -y transmission-cli
         
         # Seed the torrent file
-        transmission-cli ${{ inputs.file_name }}.torrent
+        transmission-cli ${{ github.event.inputs.file_name }}.torrent
