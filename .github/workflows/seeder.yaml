@@ -8,9 +8,30 @@ on:
         required: true
         default: 'false'
         type: boolean
+      comment:
+        description: Comment
+        required: true
+        default: Firefox Setup 122.0.1 win64 en-US by torrent-webseed-creator
       release_repo_url:
         description: 'URL of the release repository'
         required: true
+      file_name:
+        description: File name of the folder in the torrent
+        required: true
+        default: Firefox Setup 122.0.1
+      piece_size:
+        description: Piece Size. Use auto for automatic calculation, or use the recommended piece size on the README.md file
+        required: true
+        default: auto
+      protocol_version:
+        description: BitTorrent Protocol version 1, 2, or hybrid
+        required: true
+        default: 1
+        type: choice
+        options: [1, 2, hybrid]
+      maximize_disk_space:
+        description: Maximize disk space. Check if getting out of disk space error
+        type: boolean
 
 jobs:
 
@@ -20,6 +41,16 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
+    
+    - name: Maximize disk space
+      if: inputs.maximize_disk_space
+      uses: easimon/maximize-build-space@v10
+      with:
+        remove-dotnet: true
+        remove-android: true
+        remove-haskell: true
+        remove-codeql: true
+        remove-docker-images: true
       
     - name: Download release assets
       uses: robmannion/download-release-asset@v1
@@ -36,17 +67,21 @@ jobs:
           fi
         done
         
-    - name: Create torrent file
-      uses: anthonyraymond/create-torrent@v1
-      with:
-        path: unzipped
-        output: torrent.torrent
+    - name: Create torrent using torrenttools
+      run: |
+        torrenttools create \
+          -v "${{ inputs.protocol_version }}" \
+          -o "${{ inputs.file_name }}.torrent" \
+          -c "${{ inputs.comment }}" \
+          -l "${{ inputs.piece_size }}" \
+          -s "torrent-creator" \
+          unzipped
         
     - name: Upload torrent artifact
       uses: actions/upload-artifact@v3
       with:
         name: torrent
-        path: torrent.torrent
+        path: ${{ inputs.file_name }}.torrent
         
     - name: Seed torrent
       if: ${{ github.event.inputs.seed == 'true' }}
@@ -56,4 +91,4 @@ jobs:
         sudo apt-get install -y transmission-cli
         
         # Seed the torrent file
-        transmission-cli torrent.torrent
+        transmission-cli ${{ inputs.file_name }}.torrent
