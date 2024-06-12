@@ -69,8 +69,8 @@ jobs:
           curl -L -O "$url"
         done
     
-    - name: Install 7zip
-      run: sudo apt-get update && sudo apt-get install -y p7zip-full
+    - name: Install dependencies
+      run: sudo apt-get update && sudo apt-get install -y p7zip-full vsftpd
     
     - name: Unzip assets
       run: |
