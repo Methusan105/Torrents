@@ -5,7 +5,7 @@ base_url = "https://api.github.com/repos/Methusan105/Torrents/actions/workflows/
 
 # List of workflow names
 workflow_names = [
-    "torrenttools.yaml",
+    "torrenttools2.yaml",
     # Add more workflow names as needed
 ]
 
@@ -37,6 +37,6 @@ def run_workflow(workflow_name, file_number):
 
 # Run each workflow for each file
 for workflow_name in workflow_names:
-    for file_number in range(1, ):
-        print(f"Running {workflow_name} for file {file_number:03d}")
+    for file_number in range(1, 50):
+        print(f"Running {workflow_name} for file {file_number:01d}")
         run_workflow(workflow_name, file_number)
