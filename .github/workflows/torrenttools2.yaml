@@ -1,4 +1,4 @@
-name: as
+name: torrenttools
 on:
   workflow_dispatch:
     inputs:
